@@ -1,35 +1,32 @@
 import express from 'express';
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
+import session from 'express-session';
+
+import genFunc from 'connect-memcached';
 
 const app = express();
-app.use(express.json());
 
-const adapter = new JSONFile('db.json');
-const db = new Low(adapter);
-await db.read();
-db.data ||= { posts: [
-  {"id":1, "value": "hello world!"}
-]};
+const MemcachedStore = genFunc(session);
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: false,
+  store: new MemcachedStore({
+    hosts: ["127.0.0.1:11211"],
+    secret: "123, easy as ABC. ABC, easy as 123" // Optionally use transparent encryption for memcached session data
+  })
+}))
 
-const { posts } = db.data;
+app.get("/", function(req, res, next) {
+  console.log('here');
+  if (req.session.views) {
+    ++req.session.views;
+  } else {
+    req.session.views = 1;
+  }
+  res.send("Viewed <strong>" + req.session.views + "</strong> times.");
+  next();
+});
 
-app.get('/posts/:id', async (req, res) => {
-  const postId = req.params.id*1;
-  const post = posts.find(p => p.id === postId);
-  res.send(post);
-})
-
-app.post('/posts', async (req, res, next) => {
-  const post = { "id": req.body.id*1, "value": req.body.value};
-  console.log(post);
-
-  posts.push(post);
-
-  await db.write();
-  res.send(post);
-})
-
-app.listen(3000, () => {
-  console.log('listening on port 3000');
+app.listen(3000, function() {
+  console.log("Listening on %d", this.address().port);
 });
