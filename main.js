@@ -1,23 +1,23 @@
-import express from 'express'
-import { Low } from 'lowdb'
-import { JSONFile } from 'lowdb/node'
+import express from 'express';
+import { Low } from 'lowdb';
+import { JSONFile } from 'lowdb/node';
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
 
-const adapter = new JSONFile('db.json')
-const db = new Low(adapter)
-await db.read()
+const adapter = new JSONFile('db.json');
+const db = new Low(adapter);
+await db.read();
 db.data ||= { posts: [
   {"id":1, "value": "hello world!"}
-]}
+]};
 
-const { posts } = db.data
+const { posts } = db.data;
 
 app.get('/posts/:id', async (req, res) => {
   const postId = req.params.id*1;
   const post = posts.find(p => p.id === postId);
-  res.send(post)
+  res.send(post);
 })
 
 app.post('/posts', async (req, res, next) => {
@@ -31,5 +31,5 @@ app.post('/posts', async (req, res, next) => {
 })
 
 app.listen(3000, () => {
-  console.log('listening on port 3000')
-})
+  console.log('listening on port 3000');
+});
