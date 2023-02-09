@@ -1,32 +1,18 @@
-import express from 'express';
 import session from 'express-session';
 
 import genFunc from 'connect-memcached';
 
-const app = express();
+import createApp from './app.js';
 
-const MemcachedStore = genFunc(session);
-app.use(session({
-  secret: 'secret',
-  resave: false,
-  saveUninitialized: false,
-  store: new MemcachedStore({
+function testWithMemcached() {
+  const MemcachedStore = genFunc(session);
+  const sessionStore = new MemcachedStore({
     hosts: ["127.0.0.1:11211"],
-    secret: "123, easy as ABC. ABC, easy as 123" // Optionally use transparent encryption for memcached session data
-  })
-}))
+    secret: "123, easy as ABC. ABC, easy as 123"
+  });
 
-app.get("/", function(req, res, next) {
-  console.log('here');
-  if (req.session.views) {
-    ++req.session.views;
-  } else {
-    req.session.views = 1;
-  }
-  res.send("Viewed <strong>" + req.session.views + "</strong> times.");
-  next();
-});
+  const app = createApp({ sessionStore });
+  app.listen(3000, () => (console.log('running on port 3000')));
+}
 
-app.listen(3000, function() {
-  console.log("Listening on %d", this.address().port);
-});
+testWithMemcached();
