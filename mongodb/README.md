@@ -1,8 +1,7 @@
 To run this, first you need to:
   - Install mongodb and connect to it
-  - Set up: 
-      - create a database called `express-store-test` 
-      - create a collection called `session`
+  - Create a database called `express-store-test` 
+      - Create a collection called `session`
   - Run `node mongodb.js` 
 
 Once this is up and running, you can use Postman to query the endpoints. 
