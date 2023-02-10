@@ -8,7 +8,7 @@ function testWithMemcached() {
   const MemcachedStore = genFunc(session);
   const sessionStore = new MemcachedStore({
     hosts: ["127.0.0.1:11211"],
-    secret: "123, easy as ABC. ABC, easy as 123"
+    secret: "secret"
   });
 
   const app = createApp({ sessionStore });
