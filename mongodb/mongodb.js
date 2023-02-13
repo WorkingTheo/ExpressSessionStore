@@ -2,7 +2,7 @@ import session from 'express-session';
 
 import MongoStore from 'connect-mongo';
 
-import createApp from './app.js';
+import createApp from '../app.js';
 
 const sessionStore = MongoStore.create({
   mongoUrl: 'mongodb://localhost:27017',
