@@ -15,12 +15,16 @@ export default function createApp({
   }));
 
   app.get('/test/read/:id', (req, res, next) => {
+    console.log('read: ', req.session.id);
+
     const id = req.params.id;
     const response = { id, val: req.session[id] };
     res.send(JSON.stringify(response));
   });
 
   app.post('/test/write/:id', (req, res, next) => {
+    console.log('write: ', req.session.id);
+
     const id = req.params.id;
     const data = req.body;
     req.session[id] = data;
