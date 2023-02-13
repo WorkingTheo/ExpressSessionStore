@@ -109,11 +109,17 @@ async function test2() {
     await getLoop(i, sid, times, sums);
   }
 
-  console.log(times);
+  //console.log(times);
   const avgPost = sums.sPost / num;
   const avgGet = sums.sGet / num;
   const avgUpdate = sums.sUpdate / num;
   console.log({ avgPost, avgGet, avgUpdate });
 }
 
-test2();
+async function test10Times() {
+  for (let i = 0; i < 10; i++) {
+    await test2();
+  }
+}
+
+test10Times();
