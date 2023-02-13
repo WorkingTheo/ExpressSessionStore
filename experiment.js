@@ -1,5 +1,6 @@
 import axios from 'axios';
 import fs from 'fs';
+import { performance } from 'perf_hooks';
 
 const instance = axios.create({
   baseURL: 'http://localhost:3000',
@@ -26,8 +27,8 @@ function getCookie(response) {
 }
 
 async function postUser(id, userData, sid) {
-  const config = sid ? {headers: { Cookie: sid }} : undefined;
-  const resp = await instance.post('/test/write/' + id, userData, config );
+  const config = sid ? { headers: { Cookie: sid } } : undefined;
+  const resp = await instance.post('/test/write/' + id, userData, config);
   return resp;
 }
 
@@ -38,22 +39,56 @@ async function getUser(id, sid) {
   return resp;
 }
 
-async function test() {
-  var sid;
-  for (let i = 0; i < 3; i++) {
-    const userId = i + 1;
-    const userData = readUserData(userId);
-    const resp = await postUser(userId, userData, sid);
+async function postLoop(i, sid, times, sums) {
+  const userId = i + 1;
+  const userData = readUserData(userId);
 
-    if (!sid) {
-      sid = getCookie(resp);
-    }
-  }
+  const start = performance.now();
+  const resp = await postUser(userId, userData, sid);
+  const end = performance.now();
+  const diff = end - start;
 
-  for (let i = 0; i < 3; i++) {
-    const userId = i + 1;
-    const userData = await getUser(userId, sid);
+  times[userId] = { post: diff };
+  sums.sPost += diff;
+
+  if (!sid) {
+    sid = getCookie(resp);
   }
 }
 
-test();
+async function getLoop(i, sid, times, sums) {
+  const userId = i + 1;
+
+  const start = performance.now();
+  const userData = await getUser(userId, sid);
+  const end = performance.now();
+  const diff = end - start;
+
+  times[userId].get = diff;
+
+  sums.sGet += diff;
+}
+
+async function test2() {
+  var times = {};
+  var sums = { sPost: 0, sGet: 0 };
+
+  var sid;
+
+  const num = 100;
+
+  for (let i = 0; i < num; i++) {
+    await postLoop(i, sid, times, sums);
+  }
+
+  for (let i = 0; i < num; i++) {
+    await getLoop(i, sid, times, sums);
+  }
+
+  console.log(times);
+  const avgPost = sums.sPost / num;
+  const avgGet = sums.sGet / num;
+  console.log({ avgPost, avgGet });
+}
+
+test2();
