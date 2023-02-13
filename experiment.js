@@ -32,6 +32,12 @@ async function postUser(id, userData, sid) {
   return resp;
 }
 
+async function updateUser(id, userData, sid) {
+  const config = { headers: { Cookie: sid } };
+  const resp = await instance.post('/test/update/' + id, userData, config);
+  return resp;
+}
+
 async function getUser(id, sid) {
   const resp = await instance.get('/test/read/' + id, {
     headers: { Cookie: sid }
@@ -44,23 +50,38 @@ async function postLoop(i, sid, times, sums) {
   const userData = readUserData(userId);
 
   const start = performance.now();
-  const resp = await postUser(userId, userData, sid);
+  const resp = await postUser(userId, userData, sid.value);
   const end = performance.now();
   const diff = end - start;
 
   times[userId] = { post: diff };
   sums.sPost += diff;
 
-  if (!sid) {
-    sid = getCookie(resp);
+  if (!sid.value) {
+    sid.value = getCookie(resp);
   }
+}
+
+async function updateLoop(i, sid, times, sums) {
+  const userId = i + 1;
+  const userData = {
+    email: "newemail@mail.com"
+  };
+
+  const start = performance.now();
+  const resp = await updateUser(userId, userData, sid.value);
+  const end = performance.now();
+  const diff = end - start;
+
+  times[userId].update = diff;
+  sums.sUpdate += diff;
 }
 
 async function getLoop(i, sid, times, sums) {
   const userId = i + 1;
 
   const start = performance.now();
-  const userData = await getUser(userId, sid);
+  const userData = await getUser(userId, sid.value);
   const end = performance.now();
   const diff = end - start;
 
@@ -70,15 +91,18 @@ async function getLoop(i, sid, times, sums) {
 }
 
 async function test2() {
+  var sid = {};
   var times = {};
-  var sums = { sPost: 0, sGet: 0 };
-
-  var sid;
+  var sums = { sPost: 0, sGet: 0, sUpdate: 0 };
 
   const num = 100;
 
   for (let i = 0; i < num; i++) {
     await postLoop(i, sid, times, sums);
+  }
+
+  for (let i = 0; i < num; i++) {
+    await updateLoop(i, sid, times, sums);
   }
 
   for (let i = 0; i < num; i++) {
@@ -88,7 +112,8 @@ async function test2() {
   console.log(times);
   const avgPost = sums.sPost / num;
   const avgGet = sums.sGet / num;
-  console.log({ avgPost, avgGet });
+  const avgUpdate = sums.sUpdate / num;
+  console.log({ avgPost, avgGet, avgUpdate });
 }
 
 test2();

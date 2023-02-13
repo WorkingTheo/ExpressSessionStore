@@ -31,5 +31,15 @@ export default function createApp({
     res.send('saved ' + id);
   });
 
+  app.post('/test/update/:id', (req, res, next) => {
+    console.log('update: ', req.session.id);
+
+    const id = req.params.id;
+    const data = req.body; 
+
+    req.session[id] = {...req.session[id], ...data};
+    res.send('updated ' + id);
+  })
+
   return app;
 }
