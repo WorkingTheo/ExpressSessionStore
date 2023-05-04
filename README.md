@@ -1,4 +1,5 @@
 How to run: 
+  - make sure you have the right things installed (you need to install memcached to run memcached, and mongodb for the mongodb demo, etc)
   - navigate to directory containing the session store and follow README.md instructions to run an instance of express with the desired session store
   - in a new terminal, run `node experiment.js`, this will do:
     - measure time taken to:
